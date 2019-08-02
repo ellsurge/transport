@@ -1,7 +1,7 @@
 <?php
 // server variables
 
-define('SERVER_NAME', $_SERVER['SERVER_NAME']);
+// define('SERVER_NAME', $_SERVER['SERVER_NAME']);
 // ......................
 
 // DATABASE VALUE
