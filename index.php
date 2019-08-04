@@ -1,15 +1,19 @@
 <?php
-include('includes/autoload.inc.php');
-autoload_files(MODULES_FILES);
+// **************************this code is to be put in everyfile*****************
 
+if (!@include_once("../includes/autoload.inc.php")) {
+    include_once("./includes/autoload.inc.php");
+};
+//code...
+if (!@autoload_files(MODULES_FILES)) {
+    autoload_files(MODULES_FILES_INNER);
+};
+//--------------------------------------------------------------------------------------
+
+include_once("includes/database.inc.php");
 $main = new main();
 $db = new db();
-$time = $main->timestamp();
-$tu = $db->delete_db('tscg');
-// print_r($tu);
-// $up = $db->num_row();
-// echo $up->$qu;
-// $q = $db->create_table("users", ("id INT(6) AUTO_INCREMENT PRIMARY KEY, firstname VARCHAR(30), password VARCHAR(30)"));
+// $db->delete_db("transport");
 echo $db->error;
 
 

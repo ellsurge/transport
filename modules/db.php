@@ -1,7 +1,11 @@
 <?php
-include_once("./includes/autoload.inc.php");
-autoload_files(MODULES_FILES);
-
+if (!@include_once("../includes/autoload.inc.php")) {
+    include_once("./includes/autoload.inc.php");
+};
+//code...
+if (!@autoload_files(MODULES_FILES)) {
+    autoload_files(MODULES_FILES_INNER);
+};
 class db extends main {
     // list of methods (variables)
     protected $db_host;
@@ -30,7 +34,9 @@ class db extends main {
     
     public function db_connect(){
         // creates a database connection and stores it in a variable called conn
-        $this->conn = mysqli_connect($this->db_host, $this->db_user,$this->db_pass, $this->db_name);
+        if(!@$this->conn = mysqli_connect($this->db_host, $this->db_user,$this->db_pass, $this->db_name)){
+            $this->conn = mysqli_connect($this->db_host, $this->db_user, $this->db_pass);
+        };
         $this->error_check($this->conn) == false? mysqli_connect_error() : "";
         return $this->conn;
         
@@ -48,7 +54,7 @@ class db extends main {
     public function condition_fomat($_arr)
     {
         $string = "";
-        // foreach ($_arr as $arr) {
+
         $string = "`$_arr[0]`" . " " . $_arr[2] . " '" . $_arr[1] . "'";
 
         return $string;
@@ -64,15 +70,10 @@ class db extends main {
     }
     public function query_run($_query){
         // this pracrtically runs any querry nd variffies it to prevent errors nd stuff
-        // echo $_query;
         $query= mysqli_query($this->conn, $_query);
-        // print_r($query);
-        // die();
         $this->error($query);
-        // $query = mysqli_execute($query_prep);
         $this->query = $query;
-        // die($this->query);
-        // $this->error($this->query);
+
         return $this->query;
     }
 
@@ -80,12 +81,19 @@ class db extends main {
     // create -------------------------------------------
 
     public function create_db($_name){
-        $result = $this->query_run("CREATE DATABASE $_name");
+        $result = $this->query_run("CREATE DATABASE  IF NOT EXISTS $_name ");
         return $result;
+    }
+    public function select_db($_name)
+    {
+        $this->db_name = $_name;
     }
 
     public function create_table($_name, $_values){
-        $values = chop($this->arr_to_str($_values, ["", ", "]), ", ");
+        $values = $this->arr_to_str($_values, ["", ", "]);
+        $values = "status VARCHAR(16) DEFAULT \"active\", time TIMESTAMP DEFAULT CURRENT_TIMESTAMP(), ".$values;
+        $values = chop($values, ", ");
+        // echo "<br><br>".$values;
         $result = $this->query_run("CREATE TABLE IF NOT EXISTS $_name  ($values)");
         return $result;
 
@@ -116,7 +124,6 @@ class db extends main {
         }
 
         $fields= $this->condition_fomat($_fields);
-        // $fields = $this->arr_to_str($_fields, ["`", "`, "]);        
         $result = $this->query_run("UPDATE $_table SET $fields WHERE $condition ");
         return $result;
     }
@@ -124,12 +131,12 @@ class db extends main {
 
     public function delete_db($_name)
     {
-        $result = $this->query_run("DROP DATABASE $_name");
+        $result = $this->query_run("DROP DATABASE IF EXISTS $_name");
         return $result;
     }
     public function delete_table($_name){
 
-        $result = $this->query_run("DROP TABLE $_name ");
+        $result = $this->query_run("DROP TABLE IF EXISTS$_name ");
         return $result;
     }
     public function delete_data($_table, $_condition = 1){
@@ -156,18 +163,13 @@ class db extends main {
         if ($_condition != 1) {
             $condition = $this->condition_fomat($_condition);
         } else {
-            // echo "newsdsd";
             $condition = 1;
         }
 
-        // $condition = $this->condition_fomat($_condition);
         $qr = $this->query_run("SELECT  $fields FROM $_table WHERE  $condition");
-        // print_r($qr);
-        // die($qr);
+
         $assoc = mysqli_fetch_all($qr, MYSQLI_ASSOC);
-        // $array = mysqli_fetch_array($qr);
         return $assoc;
-        // return $array;
     }
 }
 ?>
